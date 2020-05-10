@@ -12,6 +12,7 @@
 #include "jt_file.h"
 #include "jt_loops.h"
 #include "jt_arrays.h"
+#include "jt_string.h"
 
 // TODO: buffered output ??
 
@@ -34,70 +35,40 @@ const char *code_exts[] = {
     "php",
 };
 
-b32 is_space(char c) {
-    return ((c == ' ')  |
-            (c == '\n') |
-            (c == '\r') |
-            (c == '\t'));
-}
-
-void strip_tail_whitespace(char *str) {
-    char *c = str + strlen(str);
-    assert(*c == 0);
-    do --c; while (is_space(*c));
-    c[1] = 0;
-}
-
-typedef const char* string;
-
-GenerateArrayType(string);
+typedef const char* c_str;
 
 string_array get_blacklist(void) {
-    FILE *in = fopen("cloc_blacklist.txt", "r");
-    if (!in) return (string_array) {0};
+    string_array result = {0};
     
-    size_t size = get_file_size(in) + 1;
+    file in = read_file("cloc_blacklist.txt");
+    if (!in.size) return result;
     
-    string_array result = MallocEmptyArray(string, size);
-    
-    char *buffer = malloc(size);
-    char *buffer_end = buffer + size;
-    
-    char *buffer_cursor = buffer;
-    
-    while (fgets(buffer_cursor, buffer_end - buffer_cursor, in)) {
-        strip_tail_whitespace(buffer_cursor);
-        
-        ArrayPush(result, buffer_cursor);
-        buffer_cursor += strlen(buffer_cursor) + 1;
-    }
-    
-    fclose(in);
+    string entire_file = {in.size, in.contents};
+    result = split(entire_file, '\n');
+    For (string, result) strip_surrounding_whitespace(it);
     
     return result;
 }
 
 b32 in_blacklist(const char *filename, string_array blacklist) {
     For (string, blacklist)
-        if (!strcmp(filename, *it)) return true;
+        if (!strcmp(filename, it->e)) return true;
     
     return false;
 }
 
 const char *get_extension(const char *filename) {
     b32 has_dot = false;
-    const char *c = filename;
-    while (*c) {
+    for (const char *c = filename; *c; ++c) {
         if (*c == '.') {
             has_dot = true;
             break;
         }
-        ++c;
     }
     
     if (!has_dot) return NULL;
     
-    c = filename + strlen(filename);
+    const char *c = filename + strlen(filename);
     while (*c != '.') --c;
     return c + 1;
 }
@@ -109,7 +80,7 @@ b32 has_valid_extension(const char *filename) {
     const char *ext = get_extension(filename);
     if (!ext) return false;
     
-    ForCArray(string, code_exts)
+    ForCArray(c_str, code_exts)
         if (!strcmp(ext, *it)) return true;
     
     return false;

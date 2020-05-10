@@ -2,7 +2,7 @@
 #define JT_FILE_H
 
 typedef struct {
-    u32 size;
+    size_t size;
     u8 *contents;
 } file;
 
@@ -55,6 +55,9 @@ static file read_file(const char *filename) {
     file result = {0};
     
     FILE *f = fopen(filename, "rb");
+    
+    if (!f) return result;
+    
     fseek(f, 0, SEEK_END);
     result.size = ftell(f);
     result.contents = (u8 *)malloc(result.size);
@@ -65,7 +68,7 @@ static file read_file(const char *filename) {
     return result;
 }
 
-static file free_file(file f) {
+static void free_file(file f) {
     free(f.contents);
 }
 
