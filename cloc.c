@@ -13,6 +13,8 @@
 #include "jt_loops.h"
 #include "jt_arrays.h"
 
+// TODO: buffered output ??
+
 const char *code_exts[] = {
     "sh",
     "bat",
@@ -27,6 +29,9 @@ const char *code_exts[] = {
     "rs",
     "cs",
     "lisp",
+    "py",
+    "js",
+    "php",
 };
 
 b32 is_space(char c) {
@@ -119,9 +124,7 @@ lines_of_code count_lines_of_code(const char *filename) {
     lines_of_code result = {0};
     
     file in = read_file(filename);
-    if (!in.size) {
-        return result;
-    }
+    if (!in.size) return result;
     
     b32 significant = false;
     
@@ -138,14 +141,14 @@ lines_of_code count_lines_of_code(const char *filename) {
         }
     }
     
+    free_file(in);
+    
     return result;
 }
 
 void set_count_str(char *str, sint count) {
     if (count == 0) strcpy(str, "-");
-    else {
-        snprintf(str, 17, "%lld", count);
-    }
+    else snprintf(str, 24, "%lld", count);
 }
 
 int main(void) {
@@ -157,11 +160,11 @@ int main(void) {
     GetCurrentDirectory(buffer_len, directory);
     strcat(directory, "\\*");
     
-    size_t total_loc = 0;
+    size_t total_loc  = 0;
     size_t total_sloc = 0;
     
-    printf("%-16s %10s %10s\n", "filename", "loc", "sloc");
-    printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+    printf("%-31s %10s %10s\n", "filename", "loc", "sloc");
+    printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
     
     WIN32_FIND_DATAA ffd;
     HANDLE search_handle = FindFirstFileA(directory, &ffd);
@@ -173,24 +176,24 @@ int main(void) {
             total_loc  += loc.loc;
             total_sloc += loc.sloc;
             
-            if (strlen(filename) > 16) {
-                char abbrev[17] = {0};
+            if (strlen(filename) > 23) {
+                char abbrev[24] = {0};
                 const char *ext = get_extension(filename);
-                size_t n = 16 - strlen(ext) - 2;
+                size_t n = 23 - strlen(ext) - 2;
                 strncpy(abbrev, filename, n);
                 strcat(abbrev, "..");
                 strcat(abbrev, ext);
                 filename = abbrev;
             }
             
-            char loc_str[17];  set_count_str(loc_str,  loc.loc);
-            char sloc_str[17]; set_count_str(sloc_str, loc.sloc);
+            char loc_str[24];  set_count_str(loc_str,  loc.loc);
+            char sloc_str[24]; set_count_str(sloc_str, loc.sloc);
             
-            printf("%-16s %10s %10s\n", filename, loc_str, sloc_str);
+            printf("%-31s %10s %10s\n", filename, loc_str, sloc_str);
         }
         
         running = FindNextFileA(search_handle, &ffd);
     }
     
-    printf("\n%-16s %10zu %10zu\n", "totals",  total_loc, total_sloc);
+    printf("\n%-31s %10zu %10zu\n", "totals",  total_loc, total_sloc);
 }
