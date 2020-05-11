@@ -9,9 +9,9 @@
 #include <windows.h>
 
 #include "jt_int.h"
-#include "jt_file.h"
 #include "jt_loops.h"
 #include "jt_arrays.h"
+#include "jt_file.h"
 #include "jt_string.h"
 
 // TODO: buffered output ??
@@ -40,10 +40,9 @@ typedef const char* c_str;
 string_array get_blacklist(void) {
     string_array result = {0};
     
-    file in = read_file("cloc_blacklist.txt");
-    if (!in.size) return result;
+    string entire_file = read_file_into_string("cloc_blacklist.txt");
+    if (!entire_file.count) return result;
     
-    string entire_file = {in.size, in.contents};
     result = split(entire_file, '\n');
     For (string, result) strip_surrounding_whitespace(it);
     
@@ -107,7 +106,7 @@ lines_of_code count_lines_of_code(const char *filename) {
         significant |= !is_space(ch);
         if (ch == '\n') {
             ++result.loc;
-            if (significant) ++result.sloc;
+            result.sloc += significant;
             significant = false;
         }
     }

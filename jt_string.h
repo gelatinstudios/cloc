@@ -26,6 +26,25 @@ typedef struct {
     char *e;
 } string;
 
+string read_file_into_string(const char *filename) {
+    string result = {0};
+    
+    FILE *f = fopen(filename, "rb");
+    
+    if (!f) return result;
+    
+    fseek(f, 0, SEEK_END);
+    result.count = ftell(f) + 1;
+    result.e = (u8 *)JT_Allocate(result.count);
+    fseek(f, 0, SEEK_SET);
+    fread(result.e, result.count, 1, f);
+    fclose(f);
+    
+    result.e[result.count-1] = 0;
+    
+    return result;
+}
+
 string make_string(char *c) {
     string result;
     result.count = strlen(c) + 1;
