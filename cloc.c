@@ -24,6 +24,7 @@ const char *code_exts[] = {
     "h",
     "hpp",
     "jc",
+    "jcpp",
     "jh",
     "jl",
     "java",
@@ -57,18 +58,8 @@ b32 in_blacklist(const char *filename, string_array blacklist) {
 }
 
 const char *get_extension(const char *filename) {
-    b32 has_dot = false;
-    for (const char *c = filename; *c; ++c) {
-        if (*c == '.') {
-            has_dot = true;
-            break;
-        }
-    }
-    
-    if (!has_dot) return NULL;
-    
     const char *c = filename + strlen(filename);
-    while (*c != '.') --c;
+    while (*c != '.' && c != filename) --c;
     return c + 1;
 }
 
@@ -77,8 +68,6 @@ b32 has_valid_extension(const char *filename) {
     if (!strcmp(filename, "..")) return false;
     
     const char *ext = get_extension(filename);
-    if (!ext) return false;
-    
     ForCArray(c_str, code_exts)
         if (!strcmp(ext, *it)) return true;
     
@@ -156,8 +145,8 @@ int main(void) {
                 filename = abbrev;
             }
             
-            char loc_str[24];  set_count_str(loc_str,  loc.loc);
-            char sloc_str[24]; set_count_str(sloc_str, loc.sloc);
+            char loc_str[32];  set_count_str(loc_str,  loc.loc);
+            char sloc_str[32]; set_count_str(sloc_str, loc.sloc);
             
             printf("%-31s %10s %10s\n", filename, loc_str, sloc_str);
         }
