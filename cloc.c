@@ -107,7 +107,7 @@ lines_of_code count_lines_of_code(const char *filename) {
 
 void set_count_str(char *str, sint count) {
     if (count == 0) strcpy(str, "-");
-    else snprintf(str, 24, "%lld", count);
+    else snprintf(str, 32, "%lld", count);
 }
 
 int main(void) {
