@@ -100,6 +100,11 @@ lines_of_code count_lines_of_code(const char *filename) {
         }
     }
     
+    if (c[-1] != '\n') {
+        ++result.loc;
+        result.sloc += significant;
+    }
+    
     free_file(in);
     
     return result;
